@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import textwrap
 
 from dna_engine import (
     validate_sequence,
@@ -37,38 +38,43 @@ st.markdown("""
     div[data-testid="stMetricValue"] {
         font-size: 1.8rem !important;
         font-weight: 700;
-        color: #1E3A8A;
+        color: #3B82F6;
     }
     
-    /* DNA nucleotide badge styling */
+    /* DNA nucleotide badge styling - Universal high-contrast */
     .base-badge {
         display: inline-block;
-        padding: 2px 7px;
-        font-family: monospace;
-        font-weight: bold;
-        border-radius: 4px;
-        margin: 1px;
+        padding: 3px 8px;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 700;
+        border-radius: 5px;
+        margin: 1px 2px;
+        font-size: 0.95rem;
+        text-align: center;
+        min-width: 14px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
     }
-    .base-A { background-color: #D1FAE5; color: #065F46; border: 1px solid #10B981; }
-    .base-T { background-color: #FEE2E2; color: #991B1B; border: 1px solid #EF4444; }
-    .base-G { background-color: #FEF3C7; color: #92400E; border: 1px solid #F59E0B; }
-    .base-C { background-color: #DBEAFE; color: #1E40AF; border: 1px solid #3B82F6; }
+    .base-A { background-color: #059669; color: #FFFFFF !important; border: 1px solid #10B981; }
+    .base-T { background-color: #DC2626; color: #FFFFFF !important; border: 1px solid #EF4444; }
+    .base-G { background-color: #D97706; color: #FFFFFF !important; border: 1px solid #F59E0B; }
+    .base-C { background-color: #2563EB; color: #FFFFFF !important; border: 1px solid #3B82F6; }
 
-    /* Custom Callout Box */
+    /* Custom Callout Box - Theme adaptive */
     .bio-card {
-        background: #F8FAFC;
-        border-left: 5px solid #2563EB;
+        background: rgba(148, 163, 184, 0.1);
+        border-left: 5px solid #3B82F6;
         padding: 16px;
         border-radius: 8px;
         margin-bottom: 16px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border-top: 1px solid rgba(148, 163, 184, 0.15);
+        border-right: 1px solid rgba(148, 163, 184, 0.15);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     }
     .bio-alert {
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
+        background: rgba(59, 130, 246, 0.12);
+        border: 1px solid rgba(59, 130, 246, 0.35);
         border-radius: 8px;
-        padding: 12px 16px;
-        color: #1E40AF;
+        padding: 14px 18px;
         margin: 10px 0;
     }
 </style>
@@ -271,30 +277,34 @@ with tab_data:
         })
     
     st.write("Formatted sequences (A: Green, T: Red, G: Yellow/Amber, C: Blue):")
-    html_table = """
-    <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
-        <thead>
-            <tr style="border-bottom: 2px solid #E2E8F0; text-align: left; padding: 8px;">
-                <th style="padding: 8px;">Seq ID</th>
-                <th style="padding: 8px;">Group</th>
-                <th style="padding: 8px;">Sequence Representation</th>
-                <th style="padding: 8px;">Length</th>
-            </tr>
-        </thead>
-        <tbody>
-    """
+    rows_html = []
     for sc in seq_cards:
-        grp_badge = f"<span style='background:#E0E7FF; color:#3730A3; padding: 2px 8px; border-radius: 4px; font-weight:600;'>{sc['Group']}</span>" if sc['Group'] == "Group A" else f"<span style='background:#FCE7F3; color:#9D174D; padding: 2px 8px; border-radius: 4px; font-weight:600;'>{sc['Group']}</span>"
-        html_table += f"""
-            <tr style="border-bottom: 1px solid #F1F5F9;">
-                <td style="padding: 8px; font-weight: bold;">{sc['ID']}</td>
-                <td style="padding: 8px;">{grp_badge}</td>
-                <td style="padding: 8px;">{sc['Visual']}</td>
-                <td style="padding: 8px; color: #64748B;">{len(sc['Raw'])} bp</td>
-            </tr>
-        """
-    html_table += "</tbody></table>"
-    st.markdown(html_table, unsafe_allow_html=True)
+        if sc["Group"] == "Group A":
+            grp_badge = "<span style='background:rgba(59,130,246,0.18); color:#60A5FA; padding: 3px 10px; border-radius: 6px; font-weight:600; border: 1px solid rgba(59,130,246,0.3);'>Group A</span>"
+        else:
+            grp_badge = "<span style='background:rgba(236,72,153,0.18); color:#F472B6; padding: 3px 10px; border-radius: 6px; font-weight:600; border: 1px solid rgba(236,72,153,0.3);'>Group B</span>"
+
+        rows_html.append(
+            f"<tr style='border-bottom: 1px solid rgba(150, 150, 150, 0.2);'>"
+            f"<td style='padding: 10px 12px; font-weight: bold;'>{sc['ID']}</td>"
+            f"<td style='padding: 10px 12px;'>{grp_badge}</td>"
+            f"<td style='padding: 10px 12px; letter-spacing: 2px;'>{sc['Visual']}</td>"
+            f"<td style='padding: 10px 12px; opacity: 0.8;'>{len(sc['Raw'])} bp</td>"
+            f"</tr>"
+        )
+    table_rows = "".join(rows_html)
+    full_table = (
+        f"<table style='width:100%; border-collapse: collapse; margin-top: 10px;'>"
+        f"<thead><tr style='border-bottom: 2px solid rgba(150, 150, 150, 0.35); text-align: left;'>"
+        f"<th style='padding: 10px 12px;'>Seq ID</th>"
+        f"<th style='padding: 10px 12px;'>Group</th>"
+        f"<th style='padding: 10px 12px;'>Sequence Representation</th>"
+        f"<th style='padding: 10px 12px;'>Length</th>"
+        f"</tr></thead>"
+        f"<tbody>{table_rows}</tbody>"
+        f"</table>"
+    )
+    st.markdown(full_table, unsafe_allow_html=True)
 
 
 # =============================================================================
@@ -302,13 +312,13 @@ with tab_data:
 # =============================================================================
 with tab_features:
     st.header("2. Genomic Feature Extraction Engine")
-    st.markdown("""
+    st.markdown(textwrap.dedent("""
     Automatically computes six numerical features for every sequence in the dataset:
     * **Count of A, T, G, C**: Absolute nucleotide frequencies.
     * **Total Length ($L$)**: Number of base pairs.
     * **GC Content (%)**: Percentage of Guanine and Cytosine bases:
     $$\\text{GC Content (\\%)} = \\frac{\\text{Count}(G) + \\text{Count}(C)}{L} \\times 100$$
-    """)
+    """))
 
     feat_df = build_feature_dataframe(st.session_state.dataset_records)
 
@@ -375,10 +385,10 @@ with tab_features:
 # =============================================================================
 with tab_train:
     st.header("3. Machine Learning Classifier Training")
-    st.markdown("""
+    st.markdown(textwrap.dedent("""
     Train an interpretable classifier on the six extracted features to learn the decision boundary separating
     **Group A** and **Group B**.
-    """)
+    """))
 
     feat_df = build_feature_dataframe(st.session_state.dataset_records)
     unique_groups = feat_df["Group"].unique()
@@ -484,10 +494,10 @@ with tab_train:
 # =============================================================================
 with tab_predict:
     st.header("4. Unknown DNA Sequence Prediction")
-    st.markdown("""
+    st.markdown(textwrap.dedent("""
     Enter a new, unclassified DNA sequence to predict whether it belongs to **Group A** or **Group B**.
     The sequence is automatically validated, feature-extracted, and evaluated using the trained classifier.
-    """)
+    """))
 
     # Quick test sequence buttons
     st.write("**Quick Sequence Presets:**")
@@ -551,14 +561,15 @@ with tab_predict:
             st.markdown("### Prediction Outcome")
             
             badge_color = "#3B82F6" if pred_group == "Group A" else "#EC4899"
-            bg_color = "#EFF6FF" if pred_group == "Group A" else "#FDF2F8"
+            bg_color = "rgba(59, 130, 246, 0.12)" if pred_group == "Group A" else "rgba(236, 72, 153, 0.12)"
             
-            st.markdown(f"""
-            <div style="background-color: {bg_color}; border: 2px solid {badge_color}; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
-                <h2 style="color: {badge_color}; margin: 0;">Predicted Class: {pred_group}</h2>
-                <h4 style="color: #475569; margin-top: 6px;">Classification Confidence: <strong>{conf:.1f}%</strong></h4>
-            </div>
-            """, unsafe_allow_html=True)
+            outcome_box = (
+                f"<div style='background-color: {bg_color}; border: 2px solid {badge_color}; border-radius: 10px; padding: 20px; margin-bottom: 20px;'>"
+                f"<h2 style='color: {badge_color}; margin: 0;'>Predicted Class: {pred_group}</h2>"
+                f"<h4 style='margin-top: 6px; opacity: 0.9;'>Classification Confidence: <strong>{conf:.1f}%</strong></h4>"
+                f"</div>"
+            )
+            st.markdown(outcome_box, unsafe_allow_html=True)
 
             # Probabilities distribution
             if res["probabilities"]:
@@ -596,10 +607,10 @@ with tab_predict:
 # =============================================================================
 with tab_analysis:
     st.header("5. Genomic Analysis, Applications & Limitations")
-    st.markdown("""
+    st.markdown(textwrap.dedent("""
     In-depth computational biology analysis addressing model performance, real-world translation, 
     and systemic limitations of ML in genomics.
-    """)
+    """))
 
     sub_tab1, sub_tab2, sub_tab3 = st.tabs([
         "📊 Model Results & Interpretation",
@@ -609,7 +620,7 @@ with tab_analysis:
 
     with sub_tab1:
         st.subheader("Model Results and Genomic Interpretation")
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         #### 1. Why Did the Model Succeed on These Sequences?
         In DNA sequence classification, nucleotide frequency distributions—specifically **GC content percentage**—frequently serve 
         as the primary discriminative axis between distinct genomic elements.
@@ -628,46 +639,44 @@ with tab_analysis:
         it establishes a single threshold split on `GC_Content_Pct` (typically at $\\approx 56.25\\%$) or on `Count_G`.
         Any sequence with $\\text{GC\\%} \\le 55.0\\%$ falls into Group A, while $\\text{GC\\%} > 55.0\\%$ falls into Group B.
         Consequently, the unknown test sequence **`ATGCGCGATC`** (60.0% GC content) cleanly crosses the threshold into **Group B**.
-        """)
+        """))
 
     with sub_tab2:
         st.subheader("Real-World Genomics Application: CpG Island Detection & Epigenetic Gene Regulation")
-        st.markdown("""
-        <div class="bio-card">
-            <h4>Application Case Study: Automated Epigenetic Annotation of CpG Islands</h4>
-            <p>
-            In vertebrate genomes, cytosine nucleotides occurring next to guanines (<strong>CpG dinucleotides</strong>) 
-            are frequently targeted by DNA methyltransferases to form 5-methylcytosine (5mC). Over evolutionary timescales, 
-            methylated cytosines spontaneously undergo deamination into thymine, resulting in a systemic depletion of CpG 
-            dinucleotides across eukaryotic DNA.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        cpg_card = (
+            "<div class='bio-card'>"
+            "<h4>Application Case Study: Automated Epigenetic Annotation of CpG Islands</h4>"
+            "<p>In vertebrate genomes, cytosine nucleotides occurring next to guanines (<strong>CpG dinucleotides</strong>) "
+            "are frequently targeted by DNA methyltransferases to form 5-methylcytosine (5mC). Over evolutionary timescales, "
+            "methylated cytosines spontaneously undergo deamination into thymine, resulting in a systemic depletion of CpG "
+            "dinucleotides across eukaryotic DNA.</p>"
+            "</div>"
+        )
+        st.markdown(cpg_card, unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         #### How AI/ML Classifiers are Applied in This Domain:
-        1. **Promoter Annotation**: Areas that escape methylation—termed **CpG Islands (CGIs)**—typically exhibit high GC content ($>50\\%$) 
-           and elevated CpG observed/expected ratios ($>0.60$). CGIs are clustered in $\\sim 70\\%$ of mammalian gene promoters.
+        1. **Promoter Annotation**: Areas that escape methylation—termed **CpG Islands (CGIs)**—typically exhibit high GC content (>50%) 
+           and elevated CpG observed/expected ratios (>0.60). CGIs are clustered in ~70% of mammalian gene promoters.
         2. **Cancer Diagnostics**: Aberrant hypermethylation of promoter CpG islands causes transcriptional silencing of critical 
            **tumor suppressor genes** (such as *BRCA1*, *MLH1*, and *CDKN2A*).
         3. **Machine Learning Pipeline**: Just like our classifier distinguishes Group A vs Group B via GC content and nucleotide frequencies, 
            real-world algorithms (e.g., *CpGcluster*, *Epigenome-wide Hidden Markov Models*, and *Random Forests*) scan newly assembled chromosomes 
            in sliding windows to delineate active promoters from quiescent intergenic heterochromatin.
-        """)
+        """))
 
     with sub_tab3:
         st.subheader("Key Limitation: Loss of Positional & Spatial Context ('Bag-of-Bases' Flaw)")
-        st.markdown("""
-        <div class="bio-card" style="border-left-color: #DC2626;">
-            <h4 style="color: #991B1B;">The Spatial Blindness of Simple Frequency Models</h4>
-            <p>
-            While nucleotide counts and GC percentage are computationally lightweight, they treat the DNA sequence as an 
-            <strong>unordered multiset ("bag-of-bases")</strong>. In molecular biology, sequence order and spatial spacing dictate function.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        limitation_card = (
+            "<div class='bio-card' style='border-left-color: #EF4444;'>"
+            "<h4 style='color: #EF4444;'>The Spatial Blindness of Simple Frequency Models</h4>"
+            "<p>While nucleotide counts and GC percentage are computationally lightweight, they treat the DNA sequence as an "
+            "<strong>unordered multiset (\"bag-of-bases\")</strong>. In molecular biology, sequence order and spatial spacing dictate function.</p>"
+            "</div>"
+        )
+        st.markdown(limitation_card, unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         #### Critical Manifestations of this Limitation:
         1. **Identical Composition, Divergent Biology:**
            - Consider the sequences `ATGCGCGATC` and `CGTACGTAGT`. Both share identical lengths (10 bp), identical base counts (2 A, 2 T, 3 G, 3 C), 
@@ -677,7 +686,7 @@ with tab_analysis:
              while `CGTACGTAGT` does not.
         2. **Regulatory Motifs Depend on Specific Positional Grammar:**
            - Transcription factor binding sites (e.g., the **TATA box** consensus `TATAWAW`) must reside at precise distances 
-             (typically $-25$ to $-30$ base pairs upstream of the Transcription Start Site).
+             (typically -25 to -30 base pairs upstream of the Transcription Start Site).
            - Global nucleotide counts completely fail to capture this spatial positioning.
         3. **Modern Bioinformatics Solutions:**
            - To resolve this limitation, state-of-the-art computational biology employs:
@@ -685,7 +694,7 @@ with tab_analysis:
              * **Position Weight Matrices (PWMs)**
              * **1D Convolutional Neural Networks (CNNs)** (e.g., *DeepSEA*, *Basset*)
              * **Genomic Transformers** (e.g., *DNABERT*, *HyenaDNA*, *Nucleotide Transformer*).
-        """)
+        """))
 
 
 # =============================================================================
@@ -696,7 +705,7 @@ with tab_discussion:
     st.markdown("Academic reflection questions addressing model behavior, biological fidelity, and edge cases.")
 
     with st.expander("❓ Discussion Prompt 1: Which features were the most useful, and why?", expanded=True):
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         **Answer & Biological Analysis:**
         * **GC Content (%)** and **Count of G** proved to be the most decisive features.
         * **Why?** Group A sequences were designed with an approximately balanced AT:GC ratio (GC content $\\approx 50.0\\%$), 
@@ -705,10 +714,10 @@ with tab_discussion:
           importance split criterion to `GC_Content_Pct` or `Count_G`.
         * Features such as `Length` had zero discriminative value in the default 4-sequence set because all training sequences 
           shared the exact same length (8 base pairs).
-        """)
+        """))
 
     with st.expander("❓ Discussion Prompt 2: What would happen if an unknown sequence is very different from the training data?", expanded=True):
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         **Answer & Distribution Shift Analysis:**
         * **Length Divergence:** If an unknown sequence is 500 base pairs long, raw nucleotide counts (`Count_A = 120`, `Count_G = 150`) 
           will be far outside the training distribution range ($[0, 8]$).
@@ -717,10 +726,10 @@ with tab_discussion:
           is biologically distinct from an 8 bp oligonucleotide with 60% GC, as long stretches may encompass multiple distinct functional domains.
         * **Out-of-Distribution (OOD) Edge Cases:** Poly-A tails (`AAAAAAAAAAAA`) will have `GC_Content_Pct = 0%`, classifying into Group A 
           purely because it is non-Group B, even though a poly-A tail has no biological kinship with the balanced motif of Group A.
-        """)
+        """))
 
     with st.expander("❓ Discussion Prompt 3: How should ambiguous bases (e.g., 'N' or IUPAC degenerate codes) be handled?", expanded=False):
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         **Answer & Sequencing Error Handling:**
         * In next-generation sequencing (NGS), high-throughput sequencers emit the character `'N'` when a base call is ambiguous 
           due to low fluorescence signal or sequencing errors.
@@ -728,17 +737,17 @@ with tab_discussion:
           1. Mask and exclude reads with $>5\\%$ ambiguous bases.
           2. Fractionally assign `'N'` as $0.25$ to each base.
           3. Impute base calls using surrounding k-mer context.
-        """)
+        """))
 
     with st.expander("❓ Discussion Prompt 4: Small Dataset Vulnerability & Overfitting Risks ($N=4$)", expanded=False):
-        st.markdown("""
+        st.markdown(textwrap.dedent("""
         **Answer & Statistical Learning Perspective:**
         * The default assignment dataset contains only 4 sequences ($N=4$, with $p=6$ features).
         * In statistical learning, when $p \\ge N$, models suffer from the **curse of dimensionality** and can achieve 100% training accuracy 
           by memorizing artifactual noise.
         * While this is pedagogically clear for illustrating decision tree mechanics, a real-world genomic model requires thousands 
           of diverse sequences along with cross-validation to guarantee true generalization.
-        """)
+        """))
 
 
 # -----------------------------------------------------------------------------
